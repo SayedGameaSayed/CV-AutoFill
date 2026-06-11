@@ -276,10 +276,19 @@ function collectFormData() {
     email: $('email').value.trim(),
     phone: $('phone').value.trim(),
     location: $('location').value.trim(),
+    date_of_birth: $('dateOfBirth').value.trim() || null,
     linkedin: $('linkedin').value.trim() || null,
     github: $('github').value.trim() || null,
     website: $('website').value.trim() || null,
     summary: $('summary').value.trim() || null,
+    current_title: $('currentTitle').value.trim() || null,
+    current_company: $('currentCompany').value.trim() || null,
+    years_of_experience: $('yearsOfExperience').value.trim() || null,
+    nationality: $('nationality').value.trim() || null,
+    work_authorization: $('workAuthorization').value || null,
+    desired_salary: $('desiredSalary').value.trim() || null,
+    notice_period: $('noticePeriod').value.trim() || null,
+    how_heard: $('howHeard').value.trim() || null,
     skills,
     languages,
     experience,
@@ -304,10 +313,19 @@ async function loadForm() {
   $('email').value = d.email || '';
   $('phone').value = d.phone || '';
   $('location').value = d.location || '';
+  $('dateOfBirth').value = d.date_of_birth || '';
   $('linkedin').value = d.linkedin || '';
   $('github').value = d.github || '';
   $('website').value = d.website || '';
   $('summary').value = d.summary || '';
+  $('currentTitle').value = d.current_title || '';
+  $('currentCompany').value = d.current_company || '';
+  $('yearsOfExperience').value = d.years_of_experience || '';
+  $('nationality').value = d.nationality || '';
+  $('workAuthorization').value = d.work_authorization || '';
+  $('desiredSalary').value = d.desired_salary || '';
+  $('noticePeriod').value = d.notice_period || '';
+  $('howHeard').value = d.how_heard || '';
 
   skillsTags.setTags(d.skills);
   languagesTags.setTags(d.languages);

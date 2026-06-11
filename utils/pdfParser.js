@@ -12,7 +12,7 @@ function getPdfjsLib() {
   });
 }
 
-async function parsePDF(file) {
+export async function parsePDF(file) {
   const pdfjs = await getPdfjsLib();
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;

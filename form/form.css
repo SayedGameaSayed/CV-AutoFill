@@ -181,6 +181,11 @@ body {
   opacity: 0.5;
 }
 
+select.form-input {
+  appearance: auto;
+  cursor: pointer;
+}
+
 .form-textarea {
   resize: vertical;
   min-height: 80px;
