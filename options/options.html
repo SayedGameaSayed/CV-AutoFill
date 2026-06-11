@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV AutoFill — Options</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div id="app" class="options">
+    <h1 class="options__title">CV AutoFill Settings</h1>
+
+    <section class="options__section">
+      <h2 class="options__section-title">Claude API Key</h2>
+      <p class="options__description">Your API key is stored locally and only sent to Anthropic's API.</p>
+      <div class="options__row">
+        <input type="password" id="apiKeyInput" class="options__input" placeholder="sk-ant-..." />
+        <button class="options__button options__button--primary" id="saveApiKeyBtn">Save</button>
+      </div>
+      <button class="options__button options__button--secondary" id="testApiKeyBtn">Test Connection</button>
+      <p id="apiKeyStatus" class="options__status"></p>
+    </section>
+
+    <section class="options__section">
+      <h2 class="options__section-title">CV Management</h2>
+      <div id="cvInfo">
+        <p id="cvStatusText">No CV uploaded.</p>
+      </div>
+      <button class="options__button options__button--danger" id="clearCVBtn">Clear CV Data</button>
+    </section>
+
+    <section class="options__section">
+      <h2 class="options__section-title">Fill Settings</h2>
+      <label class="options__toggle-row">
+        <input type="checkbox" id="autoDetectToggle" />
+        <span>Auto-detect forms on page load</span>
+      </label>
+      <label class="options__toggle-row">
+        <input type="checkbox" id="showSidebarToggle" />
+        <span>Show sidebar on form detection</span>
+      </label>
+    </section>
+
+    <section class="options__section">
+      <h2 class="options__section-title">Fill History</h2>
+      <table class="options__table" id="historyTable">
+        <thead>
+          <tr><th>Domain</th><th>Date</th><th>Filled</th></tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <p id="historyEmpty" class="options__muted">No fill sessions yet.</p>
+    </section>
+
+    <section class="options__section options__section--muted">
+      <h2 class="options__section-title">Privacy</h2>
+      <p class="options__description">Your CV data and API key never leave your device except when sent to Anthropic's API for parsing and field matching. No analytics, no tracking, no third-party services.</p>
+    </section>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

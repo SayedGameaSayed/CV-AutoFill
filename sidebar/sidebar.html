@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV AutoFill Preview</title>
+  <link rel="stylesheet" href="sidebar.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="sidebar__header">
+      <h1 class="sidebar__title">CV AutoFill Preview</h1>
+      <button class="sidebar__button sidebar__button--primary" id="fillAllBtn">Fill All</button>
+    </header>
+
+    <div id="stateLoading" class="sidebar__state">
+      <div class="sidebar__spinner"></div>
+      <p>Scanning fields...</p>
+    </div>
+
+    <div id="stateEmpty" class="sidebar__state" style="display:none">
+      <p>No fillable fields found on this page.</p>
+    </div>
+
+    <div id="stateNoCV" class="sidebar__state" style="display:none">
+      <p>No CV uploaded. Open the popup to upload one.</p>
+    </div>
+
+    <div id="fieldList" class="sidebar__list" style="display:none"></div>
+
+    <footer class="sidebar__footer" id="footer" style="display:none">
+      <span id="selectedCount">0 fields selected</span>
+      <button class="sidebar__button sidebar__button--primary" id="fillSelectedBtn">Fill Selected</button>
+    </footer>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>
