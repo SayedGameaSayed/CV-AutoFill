@@ -1119,6 +1119,7 @@ function matchFieldsLocally(fields, parsed) {
       if (cf.question && normalized.includes(normalizeAndExpand(cf.question))) {
         match = {
           id: field.id,
+          element_id: field.element_id,
           suggested_value: formatValue(cf.answer, field.fieldType),
           confidence: 0.98,
           reasoning: `Custom: "${cf.question}"`
@@ -1198,6 +1199,7 @@ function matchFieldsLocally(fields, parsed) {
     if (bestMatch !== null && bestScore >= 0.50) {
       matched.push({
         id: field.id,
+        element_id: field.element_id,
         suggested_value: bestMatch,
         confidence: Math.round(bestScore * 100) / 100,
         reasoning: `Matched (${Math.round(bestScore * 100)}% confidence)`

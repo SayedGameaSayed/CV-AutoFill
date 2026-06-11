@@ -124,7 +124,11 @@ async function handleFill() {
           return;
         }
       } else {
-        allMatches = [...localMatches, ...matchResult.matches];
+        const enriched = matchResult.matches.map(m => {
+          const orig = scannedFields.find(f => f.id === m.id);
+          return { ...m, element_id: orig?.element_id || m.id };
+        });
+        allMatches = [...localMatches, ...enriched];
       }
     }
     const filledCount = allMatches.filter(f => f.suggested_value !== null).length;
