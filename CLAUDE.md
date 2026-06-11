@@ -7,8 +7,8 @@ Fill job application forms from your CV using AI.
 - **Manifest V3** — Service Worker background, no DOM access in background
 - **PDF parsing** — Done in popup context (pdf.js from CDN), not service worker
 - **Message routing** — Popup/Sidebar talk directly to content script via `chrome.tabs.sendMessage`
-- **Background** — Only handles Claude API calls + `chrome.storage.local` management
-- **Hybrid matching** — Client-side regex/keyword matcher for simple fields (name, email, phone); Claude API for ambiguous ones (cover letters, etc.)
+- **Background** — Only handles Gemini API calls + `chrome.storage.local` management
+- **Hybrid matching** — Client-side regex/keyword matcher for simple fields (name, email, phone); Gemini API for ambiguous ones (cover letters, etc.)
 - **Undo** — Undo All via snapshot before fill
 - **No bundler** — Pure Vanilla JS, files loaded individually
 
@@ -25,7 +25,7 @@ cv-autofill/
     ├── pdfParser.js        # PDF → text (popup context)
     ├── formScanner.js      # DOM → FormField[] (content script)
     ├── localMatcher.js     # Client-side matching
-    ├── claudeClient.js     # Claude API wrapper (background)
+    ├── claudeClient.js     # Gemini API wrapper (background)
     └── fillEngine.js       # DOM value writer (content script)
 ```
 

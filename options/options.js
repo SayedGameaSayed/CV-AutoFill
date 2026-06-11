@@ -82,22 +82,17 @@ testApiKeyBtn.addEventListener('click', async () => {
   }
   setStatus(apiKeyStatus, 'Testing...', '');
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 10,
-        messages: [{ role: 'user', content: 'ping' }]
+        contents: [{ parts: [{ text: 'ping' }] }],
+        generationConfig: { maxOutputTokens: 10 }
       })
     });
     if (response.ok) {
       setStatus(apiKeyStatus, 'Connection successful!', 'success');
-    } else if (response.status === 401) {
+    } else if (response.status === 403 || response.status === 400) {
       setStatus(apiKeyStatus, 'Invalid API key. Check and try again.', 'error');
     } else {
       setStatus(apiKeyStatus, `Unexpected response: ${response.status}`, 'error');

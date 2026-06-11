@@ -1,5 +1,4 @@
-const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
+const GEMINI_MODEL = 'gemini-2.0-flash';
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 2000;
 
@@ -9,35 +8,31 @@ async function getApiKey() {
   return result.apiKey;
 }
 
-async function claudeRequest(systemPrompt, userMessage, apiKey) {
+async function geminiRequest(systemPrompt, userMessage, apiKey) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const response = await fetch(CLAUDE_API, {
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 8192,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }]
+        contents: [{ parts: [{ text: userMessage }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: { maxOutputTokens: 8192, temperature: 0.1 }
       })
     });
     if (response.ok) {
       const data = await response.json();
-      return data.content[0].text;
+      return data.candidates[0].content.parts[0].text;
     }
-    if (response.status === 401) throw new Error('API_KEY_INVALID');
-    if (response.status === 429 || response.status === 529) {
+    if (response.status === 403 || response.status === 400) throw new Error('API_KEY_INVALID');
+    if (response.status === 429) {
       if (attempt < MAX_RETRIES - 1) {
         await new Promise(r => setTimeout(r, RETRY_DELAY));
         continue;
       }
       throw new Error('RATE_LIMITED');
     }
-    throw new Error(`CLAUDE_ERROR: ${response.status}`);
+    throw new Error(`API_ERROR: ${response.status}`);
   }
 }
 
@@ -71,7 +66,7 @@ The JSON must match this exact schema:
 If a field is not found in the CV, use null for optional fields or empty array [] for arrays.`;
 
 async function parseCVViaClaude(rawText, apiKey) {
-  const text = await claudeRequest(PARSE_SYSTEM_PROMPT, rawText, apiKey);
+  const text = await geminiRequest(PARSE_SYSTEM_PROMPT, rawText, apiKey);
   return JSON.parse(text);
 }
 
@@ -96,6 +91,6 @@ Each item: { "id": "field_id", "suggested_value": "string or null", "confidence"
 
 async function matchFieldsViaClaude(parsedCV, rawText, unmatchedFields, apiKey) {
   const userMessage = `CV Data:\n${JSON.stringify({ parsed: parsedCV, raw_text: rawText }, null, 2)}\n\nForm Fields:\n${JSON.stringify(unmatchedFields, null, 2)}`;
-  const text = await claudeRequest(MATCH_SYSTEM_PROMPT, userMessage, apiKey);
+  const text = await geminiRequest(MATCH_SYSTEM_PROMPT, userMessage, apiKey);
   return JSON.parse(text);
 }

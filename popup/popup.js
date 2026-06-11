@@ -139,7 +139,7 @@ async function handleFill() {
       });
       if (!matchResult.success) {
         if (matchResult.error === 'API_KEY_MISSING' || matchResult.error === 'API_KEY_INVALID') {
-          showError('Claude API key issue. Check Options.');
+          showError('API key issue. Check Options.');
           return;
         }
       } else {
@@ -199,9 +199,9 @@ function showError(msg) {
 
 function getFriendlyError(code) {
   switch (code) {
-    case 'API_KEY_MISSING': return 'Claude API key not set. Go to Options to add it.';
+    case 'API_KEY_MISSING': return 'API key not set. Go to Options to add your Gemini key.';
     case 'API_KEY_INVALID': return 'Invalid API key. Check your Options.';
-    case 'RATE_LIMITED': return 'Claude API is overloaded. Please try again.';
+    case 'RATE_LIMITED': return 'API rate limited. Please try again.';
     default: return code;
   }
 }
