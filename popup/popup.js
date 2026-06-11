@@ -3,7 +3,6 @@ import { matchFieldsLocally } from '../utils/localMatcher.js';
 
 const SHOW = 'block';
 const HIDE = 'none';
-const HIDE = 'none';
 
 const $ = id => document.getElementById(id);
 const state = {
