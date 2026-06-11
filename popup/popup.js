@@ -68,6 +68,13 @@ async function handleFile(file) {
 
 reuploadBtn.addEventListener('click', () => showOnly(state.upload));
 
+function openManualForm() {
+  chrome.tabs.create({ url: chrome.runtime.getURL('form/form.html') });
+}
+
+document.getElementById('editCvBtn').addEventListener('click', openManualForm);
+document.getElementById('manualBtn').addEventListener('click', openManualForm);
+
 fillBtn.addEventListener('click', handleFill);
 
 previewBtn.addEventListener('click', async () => {

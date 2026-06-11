@@ -181,6 +181,28 @@ body {
   margin-top: 14px;
 }
 
+/* Divider */
+.popup__divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 10px;
+}
+
+.popup__divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--surface-border);
+}
+
+.popup__divider-text {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
 /* CV Ready Card */
 .popup__cv-card {
   display: flex;
