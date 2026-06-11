@@ -170,3 +170,21 @@ body {
 }
 
 #errorRetryBtn { margin-top: 8px; }
+
+.popup__footer {
+  text-align: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.popup__settings-link {
+  font-size: 12px;
+  color: var(--color-muted);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.popup__settings-link:hover {
+  color: var(--color-primary);
+}

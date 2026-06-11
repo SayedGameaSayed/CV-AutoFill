@@ -77,6 +77,11 @@ previewBtn.addEventListener('click', async () => {
 
 errorRetryBtn.addEventListener('click', checkStatus);
 
+document.getElementById('settingsLink').addEventListener('click', (e) => {
+  e.preventDefault();
+  chrome.runtime.openOptionsPage();
+});
+
 // --- Local matcher (inline, mirrors utils/localMatcher.js) ---
 const LABEL_PATTERNS = [
   { keys: ['first name', 'firstname', 'given name', 'fname', 'الاسم الأول'], src: 'full_name', transform: v => v?.split(' ')[0] || null },
