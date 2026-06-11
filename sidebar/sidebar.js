@@ -1,3 +1,5 @@
+import { matchFieldsLocally } from '../utils/localMatcher.js';
+
 const fieldList = document.getElementById('fieldList');
 const stateLoading = document.getElementById('stateLoading');
 const stateEmpty = document.getElementById('stateEmpty');
@@ -32,21 +34,39 @@ async function scanAndMatch(cvData) {
       showState(stateEmpty);
       return;
     }
-    const matchResult = await chrome.runtime.sendMessage({
-      type: 'MATCH_FIELDS',
-      parsedCV: cvData.parsed,
-      rawText: cvData.raw_text,
-      unmatchedFields: scanResult.fields
-    });
-    if (matchResult.success) {
-      fields = matchResult.matches.map((m, i) => ({
-        ...m,
-        label: scanResult.fields.find(f => f.id === m.id)?.label || 'Unknown',
-        element_id: scanResult.fields.find(f => f.id === m.id)?.element_id || m.id,
-        skipped: false
-      }));
-      renderFields();
+
+    // Local matching first
+    const { matched: localMatches, unmatched } = matchFieldsLocally(scanResult.fields, cvData.parsed);
+
+    // AI matching for unmatched fields
+    let aiMatches = [];
+    if (unmatched.length > 0) {
+      const matchResult = await chrome.runtime.sendMessage({
+        type: 'MATCH_FIELDS',
+        parsedCV: cvData.parsed,
+        rawText: cvData.raw_text,
+        unmatchedFields: unmatched
+      });
+      if (matchResult.success) {
+        aiMatches = matchResult.matches.map(m => ({
+          ...m,
+          element_id: scanResult.fields.find(f => f.id === m.id)?.element_id || m.id
+        }));
+      }
     }
+
+    const allMatches = [...localMatches, ...aiMatches];
+    if (allMatches.length === 0) {
+      showState(stateEmpty);
+      return;
+    }
+
+    fields = allMatches.map(m => ({
+      ...m,
+      label: scanResult.fields.find(f => f.id === m.id)?.label || 'Unknown',
+      skipped: false
+    }));
+    renderFields();
   } catch (err) {
     showState(stateEmpty);
   }
