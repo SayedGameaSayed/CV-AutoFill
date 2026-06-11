@@ -82,7 +82,8 @@ testApiKeyBtn.addEventListener('click', async () => {
   }
   setStatus(apiKeyStatus, 'Testing...', '');
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`, {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -94,6 +95,8 @@ testApiKeyBtn.addEventListener('click', async () => {
       setStatus(apiKeyStatus, 'Connection successful!', 'success');
     } else if (response.status === 403 || response.status === 400) {
       setStatus(apiKeyStatus, 'Invalid API key. Check and try again.', 'error');
+    } else if (response.status === 429) {
+      setStatus(apiKeyStatus, 'Rate limited — free tier quota may be hit. Wait a moment and retry.', 'error');
     } else {
       setStatus(apiKeyStatus, `Unexpected response: ${response.status}`, 'error');
     }
