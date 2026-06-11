@@ -100,7 +100,7 @@ async function handleFill() {
   setLoading('Scanning form fields...');
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const scanResult = await chrome.tabs.sendMessage(tab.id, { type: 'SCAN_FIELDS' });
+    const scanResult = await chrome.runtime.sendMessage({ type: 'SCAN_FIELDS', tabId: tab.id });
     if (!scanResult || !scanResult.fields || scanResult.fields.length === 0) {
       showError('No fillable fields found on this page.');
       return;
@@ -125,13 +125,13 @@ async function handleFill() {
       } else {
         const enriched = matchResult.matches.map(m => {
           const orig = scannedFields.find(f => f.id === m.id);
-          return { ...m, element_id: orig?.element_id || m.id };
+          return { ...m, element_id: orig?.element_id || m.id, frameId: orig?.frameId };
         });
         allMatches = [...localMatches, ...enriched];
       }
     }
     const filledCount = allMatches.filter(f => f.suggested_value !== null).length;
-    await chrome.tabs.sendMessage(tab.id, { type: 'WRITE_FIELDS', fields: allMatches });
+    await chrome.runtime.sendMessage({ type: 'WRITE_FIELDS', tabId: tab.id, fields: allMatches });
     await logFillSession(tab.url, scannedFields.length, filledCount);
     window.close();
   } catch (err) {
@@ -156,7 +156,7 @@ async function checkStatus() {
     cvUploadDate.textContent = `Uploaded ${date}`;
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     try {
-      const scanResult = await chrome.tabs.sendMessage(tab.id, { type: 'SCAN_FIELDS' });
+      const scanResult = await chrome.runtime.sendMessage({ type: 'SCAN_FIELDS', tabId: tab.id });
       if (scanResult && scanResult.fields && scanResult.fields.length > 0) {
         scannedFields = scanResult.fields;
         fieldCount.textContent = `${scanResult.fields.length} fields detected on this page`;

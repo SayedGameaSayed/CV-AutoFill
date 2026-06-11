@@ -10,8 +10,18 @@
     "sidePanel"
   ],
   "host_permissions": [
-    "https://generativelanguage.googleapis.com/*"
+    "https://generativelanguage.googleapis.com/*",
+    "http://*/*",
+    "https://*/*"
   ],
+  "commands": {
+    "autofill": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+F"
+      },
+      "description": "Auto-fill the current form"
+    }
+  },
   "background": {
     "service_worker": "background.js",
     "type": "module"
@@ -31,7 +41,9 @@
     {
       "matches": ["<all_urls>"],
       "js": ["utils/formScanner.js", "utils/fillEngine.js", "content.js"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": true,
+      "match_origin_as_fallback": true
     }
   ],
   "options_page": "options/options.html",

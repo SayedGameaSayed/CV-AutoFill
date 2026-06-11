@@ -29,7 +29,7 @@ async function scanAndMatch(cvData) {
   showState(stateLoading);
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const scanResult = await chrome.tabs.sendMessage(tab.id, { type: 'SCAN_FIELDS' });
+    const scanResult = await chrome.runtime.sendMessage({ type: 'SCAN_FIELDS', tabId: tab.id });
     if (!scanResult || !scanResult.fields || scanResult.fields.length === 0) {
       showState(stateEmpty);
       return;
@@ -50,7 +50,8 @@ async function scanAndMatch(cvData) {
       if (matchResult.success) {
         aiMatches = matchResult.matches.map(m => ({
           ...m,
-          element_id: scanResult.fields.find(f => f.id === m.id)?.element_id || m.id
+          element_id: scanResult.fields.find(f => f.id === m.id)?.element_id || m.id,
+          frameId: scanResult.fields.find(f => f.id === m.id)?.frameId
         }));
       }
     }
@@ -114,7 +115,7 @@ async function fillSelected(all) {
   if (toFill.length === 0) return;
   try {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    await chrome.tabs.sendMessage(tab.id, { type: 'WRITE_FIELDS', fields: toFill });
+    await chrome.runtime.sendMessage({ type: 'WRITE_FIELDS', tabId: tab.id, fields: toFill });
     window.close();
   } catch (err) {
     console.error('Fill failed:', err);

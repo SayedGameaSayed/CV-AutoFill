@@ -1,9 +1,16 @@
 const STYLE_ID = 'cv-autofill-styles';
 const TOAST_ID = 'cv-autofill-toast';
+const OBSERVER_DELAY = 350;
 
 let undoSnapshot = [];
+let formObserver = null;
+let navCheckInterval = null;
+let lastUrl = location.href;
 
 injectStyles();
+registerFrame();
+startFormObserver();
+startNavWatcher();
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
@@ -14,10 +21,87 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     case 'WRITE_FIELDS':
       handleWriteFields(message.fields, sendResponse);
       return true;
+    case 'SCAN_FIELDS_DEEP':
+      scanDeep(sendResponse);
+      return true;
+    case 'AUTOFILL':
+      handleAutoFill(sendResponse);
+      return true;
+    case 'PING':
+      sendResponse({ alive: true });
+      return true;
   }
 });
 
-async function handleWriteFields(fields, sendResponse) {
+function registerFrame() {
+  try {
+    chrome.runtime.sendMessage({ type: 'FRAME_REGISTER', url: location.href }, () => {
+      if (chrome.runtime.lastError) {}
+    });
+  } catch (e) {}
+}
+
+function startFormObserver() {
+  if (formObserver) formObserver.disconnect();
+  formObserver = new MutationObserver(() => {
+    if (document.querySelector('input, textarea, select, [contenteditable], [role="combobox"], [role="textbox"]')) {
+      clearTimeout(formObserver._debounce);
+      formObserver._debounce = setTimeout(() => {
+        chrome.runtime.sendMessage({
+          type: 'FORMS_DETECTED',
+          url: location.href
+        });
+      }, OBSERVER_DELAY);
+    }
+  });
+  formObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+    attributes: false
+  });
+}
+
+function startNavWatcher() {
+  if (navCheckInterval) clearInterval(navCheckInterval);
+  navCheckInterval = setInterval(() => {
+    if (location.href !== lastUrl) {
+      lastUrl = location.href;
+      restart();
+    }
+  }, 500);
+}
+
+function restart() {
+  if (formObserver) formObserver.disconnect();
+  startFormObserver();
+}
+
+async function handleAutoFill(sendResponse) {
+  const result = await chrome.storage.local.get('cvData');
+  if (!result.cvData) {
+    sendResponse({ success: false, reason: 'no_cv' });
+    return;
+  }
+  const fields = scanFormFields();
+  if (fields.length === 0) {
+    sendResponse({ success: false, reason: 'no_fields' });
+    return;
+  }
+  const matchResult = await chrome.runtime.sendMessage({
+    type: 'MATCH_FIELDS',
+    parsedCV: result.cvData.parsed,
+    rawText: result.cvData.raw_text,
+    unmatchedFields: fields
+  });
+  if (matchResult.success && matchResult.matches.length > 0) {
+    handleWriteFields(matchResult.matches, (res) => sendResponse(res));
+  } else {
+    sendResponse({ success: false, reason: 'no_match' });
+  }
+  return true;
+}
+
+function handleWriteFields(fields, sendResponse) {
   const snapshot = collectOriginalValues(fields);
   let filled = 0;
   let total = 0;
@@ -39,6 +123,11 @@ async function handleWriteFields(fields, sendResponse) {
   });
 
   sendResponse({ success: true, filled, total });
+}
+
+function scanDeep(sendResponse) {
+  const fields = scanAllFields();
+  sendResponse({ fields });
 }
 
 function injectStyles() {
