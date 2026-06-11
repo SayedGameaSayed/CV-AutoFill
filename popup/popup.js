@@ -108,8 +108,19 @@ const LABEL_PATTERNS = [
 function matchLocally(fields, parsed) {
   const matched = [];
   const unmatched = [];
+  const customFields = parsed.custom_fields || [];
   fields.forEach(f => {
     const label = f.label.toLowerCase().trim();
+
+    // Check custom fields first (user-defined mappings)
+    for (const cf of customFields) {
+      if (cf.question && label.includes(cf.question.toLowerCase().trim())) {
+        matched.push({ id: f.id, suggested_value: cf.answer, confidence: 0.98, reasoning: `Custom: ${cf.question}` });
+        return;
+      }
+    }
+
+    // Then check built-in patterns
     let found = false;
     for (const p of LABEL_PATTERNS) {
       if (p.keys.some(k => label.includes(k))) {

@@ -325,6 +325,11 @@ body {
   margin-bottom: 0;
 }
 
+/* Custom field entry accent */
+.form-entry--custom {
+  border-left: 3px solid var(--primary);
+}
+
 /* Buttons */
 .form-btn {
   display: inline-flex;

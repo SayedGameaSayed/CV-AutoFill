@@ -67,7 +67,7 @@ function initTags(containerId, inputId, hiddenId) {
 }
 
 // ---- Repeatable entry helpers ----
-let entryCounters = { experience: 0, education: 0, projects: 0 };
+let entryCounters = { experience: 0, education: 0, projects: 0, customFields: 0 };
 
 function createExperienceEntry(data) {
   const idx = ++entryCounters.experience;
@@ -195,6 +195,39 @@ function createProjectEntry(data) {
   return div;
 }
 
+function createCustomFieldEntry(data) {
+  ++entryCounters.customFields;
+  const div = document.createElement('div');
+  div.className = 'form-entry form-entry--custom';
+  div.innerHTML = `
+    <div class="form-entry-header">
+      <span class="form-entry-title">${escapeHtml(data?.question || 'New Custom Field')}</span>
+      <button type="button" class="form-entry-remove" title="Remove">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+        </svg>
+      </button>
+    </div>
+    <div class="form-grid form-grid--2">
+      <div class="form-field">
+        <label class="form-label">Form Field Label</label>
+        <input type="text" class="form-input custom-question" value="${escapeHtml(data?.question || '')}" placeholder="e.g. Expected Salary, Work Authorization..." />
+      </div>
+      <div class="form-field">
+        <label class="form-label">Your Answer</label>
+        <input type="text" class="form-input custom-answer" value="${escapeHtml(data?.answer || '')}" placeholder="e.g. Negotiable, US Citizen..." />
+      </div>
+    </div>
+  `;
+  div.querySelector('.form-entry-remove').addEventListener('click', () => {
+    div.remove();
+    markDirty();
+  });
+  div.querySelectorAll('input').forEach(el => el.addEventListener('input', markDirty));
+  $('customFieldsList').appendChild(div);
+  return div;
+}
+
 // ---- Collect data ----
 function collectFormData() {
   const skills = skillsTags.getTags();
@@ -231,6 +264,13 @@ function collectFormData() {
     });
   });
 
+  const custom_fields = [];
+  $$('.form-entry--custom', $('customFieldsList')).forEach(el => {
+    const question = el.querySelector('.custom-question')?.value?.trim();
+    const answer = el.querySelector('.custom-answer')?.value?.trim();
+    if (question && answer) custom_fields.push({ question, answer });
+  });
+
   return {
     full_name: $('fullName').value.trim(),
     email: $('email').value.trim(),
@@ -245,7 +285,8 @@ function collectFormData() {
     experience,
     education,
     certifications,
-    projects
+    projects,
+    custom_fields
   };
 }
 
@@ -275,6 +316,7 @@ async function loadForm() {
   if (d.experience) d.experience.forEach(e => createExperienceEntry(e));
   if (d.education) d.education.forEach(e => createEducationEntry(e));
   if (d.projects) d.projects.forEach(p => createProjectEntry(p));
+  if (d.custom_fields) d.custom_fields.forEach(c => createCustomFieldEntry(c));
 }
 
 async function saveForm() {
@@ -313,14 +355,19 @@ cancelBtn.addEventListener('click', () => window.close());
 $('addExperienceBtn').addEventListener('click', () => createExperienceEntry());
 $('addEducationBtn').addEventListener('click', () => createEducationEntry());
 $('addProjectBtn').addEventListener('click', () => createProjectEntry());
+$('addCustomFieldBtn').addEventListener('click', () => createCustomFieldEntry());
 
 // Auto-update entry title on input
 document.addEventListener('input', e => {
   const entry = e.target.closest('.form-entry');
   if (!entry) return;
   const titleEl = entry.querySelector('.form-entry-title');
-  const titleInp = entry.querySelector('.exp-title, .edu-degree, .proj-name');
-  if (titleInp && titleEl) {
+  const titleInp = entry.querySelector('.exp-title, .edu-degree, .proj-name, .custom-question');
+  if (!titleInp) return;
+  if (entry.classList.contains('form-entry--custom')) {
+    const answerInp = entry.querySelector('.custom-answer');
+    titleEl.textContent = (titleInp.value || 'New Custom Field') + (answerInp?.value ? ` → ${answerInp.value}` : '');
+  } else {
     titleEl.textContent = titleInp.value || 'New Entry';
   }
 });
