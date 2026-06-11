@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CV AutoFill</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="popup__header">
+      <div class="popup__logo">CV AutoFill</div>
+      <div id="statusBadge" class="popup__badge"></div>
+    </header>
+
+    <main id="mainContent">
+      <div id="stateUpload" class="popup__section">
+        <div class="popup__dropzone" id="dropZone">
+          <div class="popup__dropzone-icon">&#128196;</div>
+          <p class="popup__dropzone-text">Drop your CV (PDF) here</p>
+          <p class="popup__dropzone-sub">or click to browse</p>
+          <input type="file" id="fileInput" accept=".pdf" hidden />
+        </div>
+        <p class="popup__hint">Upload once, fill any job form instantly</p>
+      </div>
+
+      <div id="stateReady" class="popup__section" style="display:none">
+        <div class="popup__cv-info">
+          <span class="popup__cv-icon">&#10003;</span>
+          <div>
+            <p class="popup__cv-name" id="cvFileName">CV Ready</p>
+            <p class="popup__cv-date" id="cvUploadDate"></p>
+          </div>
+        </div>
+        <button class="popup__button popup__button--secondary" id="reuploadBtn">Re-upload</button>
+      </div>
+
+      <div id="stateFormDetected" class="popup__section" style="display:none">
+        <p class="popup__field-count" id="fieldCount">0 fields detected on this page</p>
+        <button class="popup__button popup__button--primary" id="fillBtn">Fill Form Now</button>
+        <button class="popup__button popup__button--link" id="previewBtn">Preview before filling</button>
+      </div>
+
+      <div id="stateLoading" class="popup__section" style="display:none">
+        <div class="popup__spinner"></div>
+        <p id="loadingText">Processing...</p>
+      </div>
+
+      <div id="stateError" class="popup__section" style="display:none">
+        <p class="popup__error-text" id="errorText">Something went wrong</p>
+        <button class="popup__button popup__button--secondary" id="errorRetryBtn">Try Again</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
