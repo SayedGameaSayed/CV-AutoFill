@@ -2,12 +2,12 @@ function getPdfjsLib() {
   if (typeof pdfjsLib !== 'undefined') return Promise.resolve(pdfjsLib);
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.min.js';
+    script.src = chrome.runtime.getURL('lib/pdf.min.js');
     script.onload = () => {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js';
+      pdfjsLib.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('lib/pdf.worker.min.js');
       resolve(pdfjsLib);
     };
-    script.onerror = () => reject(new Error('Failed to load pdf.js from CDN'));
+    script.onerror = () => reject(new Error('Failed to load pdf.js'));
     document.head.appendChild(script);
   });
 }

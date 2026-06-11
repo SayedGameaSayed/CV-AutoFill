@@ -29,12 +29,15 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["utils/formScanner.js", "utils/fillEngine.js", "utils/localMatcher.js", "content.js"],
+      "js": ["utils/formScanner.js", "utils/fillEngine.js", "content.js"],
       "run_at": "document_idle"
     }
   ],
   "options_page": "options/options.html",
-  "content_security_policy": {
-    "extension_pages": "script-src 'self' https://cdnjs.cloudflare.com; object-src 'self'"
-  }
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/pdf.min.js", "lib/pdf.worker.min.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
