@@ -86,8 +86,9 @@ testApiKeyBtn.addEventListener('click', async () => {
     const response = await fetch(url);
     if (response.ok) {
       const data = await response.json();
-      const flashAvail = data.models?.some(m => m.name.includes('gemini-1.5-flash'));
-      setStatus(apiKeyStatus, `Connected! ${flashAvail ? 'gemini-1.5-flash' : 'gemini-pro'} available`, 'success');
+      const modelNames = (data.models || []).map(m => m.name);
+      const models = modelNames.map(n => n.replace('models/', '')).join(', ');
+      setStatus(apiKeyStatus, `Connected! Models: ${models || 'none'}`, 'success');
     } else if (response.status === 403 || response.status === 400) {
       setStatus(apiKeyStatus, 'Invalid API key. Check and try again.', 'error');
     } else if (response.status === 429) {

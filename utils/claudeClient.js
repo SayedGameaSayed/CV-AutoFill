@@ -1,4 +1,4 @@
-const GEMINI_MODEL = 'gemini-pro';
+const GEMINI_MODEL = 'gemini-1.0-pro';
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 2000;
 
@@ -15,8 +15,7 @@ async function geminiRequest(systemPrompt, userMessage, apiKey) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: userMessage }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] },
+        contents: [{ parts: [{ text: `${systemPrompt}\n\n${userMessage}` }] }],
         generationConfig: { maxOutputTokens: 8192, temperature: 0.1 }
       })
     });
@@ -32,7 +31,8 @@ async function geminiRequest(systemPrompt, userMessage, apiKey) {
       }
       throw new Error('RATE_LIMITED');
     }
-    throw new Error(`API_ERROR: ${response.status}`);
+    const body = await response.text().catch(() => '');
+    throw new Error(`API_ERROR: ${response.status} ${body.slice(0, 100)}`);
   }
 }
 
