@@ -77,6 +77,43 @@ previewBtn.addEventListener('click', async () => {
 
 errorRetryBtn.addEventListener('click', checkStatus);
 
+// --- Local matcher (inline, mirrors utils/localMatcher.js) ---
+const LABEL_PATTERNS = [
+  { keys: ['first name', 'firstname', 'given name', 'fname', 'الاسم الأول'], src: 'full_name', transform: v => v?.split(' ')[0] || null },
+  { keys: ['last name', 'lastname', 'surname', 'family name', 'lname', 'الاسم الأخير'], src: 'full_name', transform: v => v?.split(' ').slice(1).join(' ') || null },
+  { keys: ['email', 'e-mail', 'email address', 'البريد الإلكتروني'], src: 'email' },
+  { keys: ['phone', 'telephone', 'mobile', 'phone number', 'tel', 'رقم الهاتف'], src: 'phone' },
+  { keys: ['city', 'location', 'town', 'المدينة', 'الموقع'], src: 'location' },
+  { keys: ['linkedin', 'linkedin profile'], src: 'linkedin' },
+  { keys: ['github', 'github profile'], src: 'github' },
+  { keys: ['website', 'portfolio', 'personal website', 'الموقع الشخصي'], src: 'website' },
+  { keys: ['summary', 'professional summary', 'about me', 'profile', 'نبذة'], src: 'summary' },
+  { keys: ['skills', 'technologies', 'tech stack', 'competencies', 'المهارات'], src: 'skills', transform: v => Array.isArray(v) ? v.join(', ') : v },
+  { keys: ['certifications', 'certificates', 'الشهادات'], src: 'certifications', transform: v => Array.isArray(v) ? v.join(', ') : v },
+  { keys: ['languages', 'اللغات'], src: 'languages', transform: v => Array.isArray(v) ? v.join(', ') : v },
+];
+
+function matchLocally(fields, parsed) {
+  const matched = [];
+  const unmatched = [];
+  fields.forEach(f => {
+    const label = f.label.toLowerCase().trim();
+    let found = false;
+    for (const p of LABEL_PATTERNS) {
+      if (p.keys.some(k => label.includes(k))) {
+        let val = p.src.split('.').reduce((acc, k) => acc?.[k] ?? null, parsed);
+        if (p.transform) val = p.transform(val);
+        if (val) {
+          matched.push({ id: f.id, suggested_value: val, confidence: 0.95, reasoning: `Local: ${p.src}` });
+          found = true;
+          break;
+        }
+    }}
+    if (!found) unmatched.push(f);
+  });
+  return { matched, unmatched };
+}
+
 // --- Fill logic ---
 async function handleFill() {
   if (!cvData) return;
@@ -90,16 +127,27 @@ async function handleFill() {
     }
     scannedFields = scanResult.fields;
     setLoading('Matching fields...');
-    const matchResult = await chrome.runtime.sendMessage({
-      type: 'MATCH_FIELDS',
-      parsedCV: cvData.parsed,
-      rawText: cvData.raw_text,
-      unmatchedFields: scannedFields
-    });
-    if (!matchResult.success) throw new Error(matchResult.error);
-    const matchedFields = matchResult.matches;
-    const filledCount = matchedFields.filter(f => f.suggested_value !== null).length;
-    await chrome.tabs.sendMessage(tab.id, { type: 'WRITE_FIELDS', fields: matchedFields });
+    const { matched: localMatches, unmatched } = matchLocally(scannedFields, cvData.parsed);
+    let allMatches = localMatches;
+    if (unmatched.length > 0) {
+      setLoading(`AI-matching ${unmatched.length} fields...`);
+      const matchResult = await chrome.runtime.sendMessage({
+        type: 'MATCH_FIELDS',
+        parsedCV: cvData.parsed,
+        rawText: cvData.raw_text,
+        unmatchedFields: unmatched
+      });
+      if (!matchResult.success) {
+        if (matchResult.error === 'API_KEY_MISSING' || matchResult.error === 'API_KEY_INVALID') {
+          showError('Claude API key issue. Check Options.');
+          return;
+        }
+      } else {
+        allMatches = [...localMatches, ...matchResult.matches];
+      }
+    }
+    const filledCount = allMatches.filter(f => f.suggested_value !== null).length;
+    await chrome.tabs.sendMessage(tab.id, { type: 'WRITE_FIELDS', fields: allMatches });
     await logFillSession(tab.url, scannedFields.length, filledCount);
     window.close();
   } catch (err) {
