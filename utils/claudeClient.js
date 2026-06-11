@@ -1,6 +1,6 @@
-const GEMINI_MODEL = 'gemini-2.0-flash';
-const MAX_RETRIES = 2;
-const RETRY_DELAY = 2000;
+const GEMINI_MODEL = 'gemini-2.0-flash-lite';
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 3000;
 
 export async function getApiKey() {
   const result = await chrome.storage.local.get('apiKey');
