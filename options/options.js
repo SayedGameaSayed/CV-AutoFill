@@ -82,23 +82,19 @@ testApiKeyBtn.addEventListener('click', async () => {
   }
   setStatus(apiKeyStatus, 'Testing...', '');
   try {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: 'ping' }] }],
-        generationConfig: { maxOutputTokens: 10 }
-      })
-    });
+    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`;
+    const response = await fetch(url);
     if (response.ok) {
-      setStatus(apiKeyStatus, 'Connection successful!', 'success');
+      const data = await response.json();
+      const flashAvail = data.models?.some(m => m.name.includes('gemini-1.5-flash'));
+      setStatus(apiKeyStatus, `Connected! ${flashAvail ? 'gemini-1.5-flash' : 'gemini-pro'} available`, 'success');
     } else if (response.status === 403 || response.status === 400) {
       setStatus(apiKeyStatus, 'Invalid API key. Check and try again.', 'error');
     } else if (response.status === 429) {
-      setStatus(apiKeyStatus, 'Rate limited — free tier quota may be hit. Wait a moment and retry.', 'error');
+      setStatus(apiKeyStatus, 'Rate limited — wait a moment and retry.', 'error');
     } else {
-      setStatus(apiKeyStatus, `Unexpected response: ${response.status}`, 'error');
+      const err = await response.text().catch(() => '');
+      setStatus(apiKeyStatus, `Error ${response.status}: ${err.slice(0, 80)}`, 'error');
     }
   } catch (err) {
     setStatus(apiKeyStatus, 'Network error. Check your internet connection.', 'error');
