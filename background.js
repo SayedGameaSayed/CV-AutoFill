@@ -1,4 +1,4 @@
-try { importScripts('utils/claudeClient.js'); } catch (e) { console.error('Failed to load claudeClient.js', e); }
+import { getApiKey, parseCVViaClaude, matchFieldsViaClaude } from './utils/claudeClient.js';
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   switch (message.type) {
@@ -53,8 +53,3 @@ async function handleClearCV(sendResponse) {
   sendResponse({ success: true });
 }
 
-async function getApiKey() {
-  const result = await chrome.storage.local.get('apiKey');
-  if (!result.apiKey) throw new Error('API_KEY_MISSING');
-  return result.apiKey;
-}

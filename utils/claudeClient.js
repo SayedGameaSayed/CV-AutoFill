@@ -1,8 +1,8 @@
-const GEMINI_MODEL = 'gemini-1.0-pro';
+const GEMINI_MODEL = 'gemini-2.0-flash';
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 2000;
 
-async function getApiKey() {
+export async function getApiKey() {
   const result = await chrome.storage.local.get('apiKey');
   if (!result.apiKey) throw new Error('API_KEY_MISSING');
   return result.apiKey;
@@ -65,7 +65,7 @@ The JSON must match this exact schema:
 
 If a field is not found in the CV, use null for optional fields or empty array [] for arrays.`;
 
-async function parseCVViaClaude(rawText, apiKey) {
+export async function parseCVViaClaude(rawText, apiKey) {
   const text = await geminiRequest(PARSE_SYSTEM_PROMPT, rawText, apiKey);
   return JSON.parse(text);
 }
@@ -89,7 +89,7 @@ Instructions:
 Return ONLY a valid JSON array. No markdown. No explanation outside JSON.
 Each item: { "id": "field_id", "suggested_value": "string or null", "confidence": 0.0-1.0, "reasoning": "brief explanation" }`;
 
-async function matchFieldsViaClaude(parsedCV, rawText, unmatchedFields, apiKey) {
+export async function matchFieldsViaClaude(parsedCV, rawText, unmatchedFields, apiKey) {
   const userMessage = `CV Data:\n${JSON.stringify({ parsed: parsedCV, raw_text: rawText }, null, 2)}\n\nForm Fields:\n${JSON.stringify(unmatchedFields, null, 2)}`;
   const text = await geminiRequest(MATCH_SYSTEM_PROMPT, userMessage, apiKey);
   return JSON.parse(text);
